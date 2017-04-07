@@ -114,42 +114,6 @@ public class BatchHackerInterceptor {
         return pjp.proceed();
     }
 
-    private Object handleMapParamMethod(ProceedingJoinPoint pjp) throws Throwable {
-
-        MethodSignature signature = (MethodSignature) pjp.getSignature();
-        //获取被拦截的方法
-        Method method = signature.getMethod();
-        //获取被拦截的方法参数
-        Object[] args = pjp.getArgs();
-
-        Map map = (Map) args[0];
-        if (map.size() == 0) {
-            LOGGER.error("Map参数长度为0!调用原生的方法{}", this.getFullMethodName(method));
-            return pjp.proceed();
-        }
-
-        int listCount = 0;
-        Object key = null;
-        for (Object k : map.keySet()) {
-            if (map.get(k) instanceof List) {
-                listCount++;
-                key = k;
-            }
-        }
-
-        if (listCount == 0) {
-            LOGGER.error("Map参数中不含有List类型的value!调用原生的方法{}", this.getFullMethodName(method));
-            return pjp.proceed();
-        }
-
-        if (listCount == 1) {
-            return foreach(pjp, key, null);
-        }
-
-        LOGGER.error("Map参数中含有大于1个的List类型的value!调用原生的方法{}", this.getFullMethodName(method));
-        return pjp.proceed();
-    }
-
     private Object foreach(ProceedingJoinPoint pjp, Object key, Integer index) throws Throwable {
 
         MethodSignature signature = (MethodSignature) pjp.getSignature();
@@ -212,13 +176,47 @@ public class BatchHackerInterceptor {
         return count;
     }
 
+    private Object handleMapParamMethod(ProceedingJoinPoint pjp) throws Throwable {
+
+        MethodSignature signature = (MethodSignature) pjp.getSignature();
+        //获取被拦截的方法
+        Method method = signature.getMethod();
+        //获取被拦截的方法参数
+        Object[] args = pjp.getArgs();
+
+        Map map = (Map) args[0];
+        if (map.size() == 0) {
+            LOGGER.error("Map参数长度为0!调用原生的方法{}", this.getFullMethodName(method));
+            return pjp.proceed();
+        }
+
+        int listCount = 0;
+        Object key = null;
+        for (Object k : map.keySet()) {
+            if (map.get(k) instanceof List) {
+                listCount++;
+                key = k;
+            }
+        }
+
+        if (listCount == 0) {
+            LOGGER.error("Map参数中不含有List类型的value!调用原生的方法{}", this.getFullMethodName(method));
+            return pjp.proceed();
+        }
+
+        if (listCount == 1) {
+            return foreach(pjp, key, null);
+        }
+
+        LOGGER.error("Map参数中含有大于1个的List类型的value!调用原生的方法{}", this.getFullMethodName(method));
+        return pjp.proceed();
+    }
 
     private Object handleOneParamMethod(ProceedingJoinPoint pjp) throws Throwable {
         return handleMuitParamMethod(pjp, 0);
     }
 
     private Object handleMuitParamMethod(ProceedingJoinPoint pjp, int i) throws Throwable {
-        MethodSignature signature = (MethodSignature) pjp.getSignature();
         return foreach(pjp, null, i);
     }
 
