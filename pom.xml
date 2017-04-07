@@ -4,11 +4,16 @@
 
     <groupId>tech.washmore</groupId>
     <artifactId>util.batchhacker</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
     <packaging>jar</packaging>
-
+    <description>
+        在不侵入代码的前提下,突破mybatis批处理数据量2100个的限制!
+        ```1.0完成基本功能;
+        ```1.1新增對Map類型參數的支持;
+    </description>
     <name>BatchHacker</name>
     <url>http://maven.washmore.tech</url>
+
     <developers>
         <developer>
             <name>washmore</name>
@@ -16,9 +21,11 @@
             <url>https://github.com/1102568869/BatchHacker</url>
         </developer>
     </developers>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
     <distributionManagement>
         <snapshotRepository>
             <id>deploymentRepo</id>
@@ -27,6 +34,7 @@
             <uniqueVersion>false</uniqueVersion>
         </snapshotRepository>
     </distributionManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.aspectj</groupId>
@@ -38,10 +46,10 @@
             <artifactId>slf4j-api</artifactId>
             <version>1.7.21</version>
         </dependency>
-
-
     </dependencies>
+
     <build>
         <finalName>BatchHacker</finalName>
     </build>
+
 </project>

@@ -13,6 +13,7 @@ import tech.washmore.util.batchhacker.annotation.BatchHackerParam;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Map;
 
 /**
  * BatchHacker切点拦截器
@@ -23,7 +24,8 @@ import java.util.List;
  */
 @Aspect
 public class BatchHackerInterceptor {
-    private static final int BATCH_SIZE = 2000;
+    private static final int BATCH_SIZE = 500;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(BatchHackerInterceptor.class);
 
     @Pointcut("@annotation(tech.washmore.util.batchhacker.annotation.BatchHacker)")
@@ -41,7 +43,7 @@ public class BatchHackerInterceptor {
         Object[] args = pjp.getArgs();
 
         if (!(Integer.class.getName().equals(result.getName()) || "int".equalsIgnoreCase(result.getName()))) {
-            LOGGER.error("出參不為int!调用原生的方法{}", this.getFullMethodName(method));
+            LOGGER.error("出参不是int!调用原生的方法{}", this.getFullMethodName(method));
             return pjp.proceed();
         }
 
@@ -49,8 +51,19 @@ public class BatchHackerInterceptor {
             LOGGER.error("入参长度为0或没有入参!调用原生的方法{}", this.getFullMethodName(method));
             return pjp.proceed();
         }
-        if (args.length == 1 && args[0] instanceof List) {
-            return handleOneParamMethod(pjp);
+        if (args.length == 1) {
+            if (args[0] == null) {
+                LOGGER.info("唯一的参数为null!调用原生的方法{}", this.getFullMethodName(method));
+                return pjp.proceed();
+            }
+            if (args[0] instanceof List) {
+                return handleOneParamMethod(pjp);
+            }
+            if (args[0] instanceof Map) {
+                return handleMapParamMethod(pjp);
+            }
+            LOGGER.info("唯一的参数不为List或Map!调用原生的方法{}", this.getFullMethodName(method));
+            return pjp.proceed();
         }
 
         int listCount = 0;
@@ -89,31 +102,78 @@ public class BatchHackerInterceptor {
         }
 
         if (annCount == 0) {
-            LOGGER.error("多个List参数中没有找到BatchParam注解存在!调用原生的方法{}", this.getFullMethodName(method));
+            LOGGER.error("多个List参数中没有找到BatchHackerParam注解!调用原生的方法{}", this.getFullMethodName(method));
             return pjp.proceed();
         }
+
         if (annCount == 1) {
             return handleMuitParamMethod(pjp, index);
         }
 
-        LOGGER.error("多个List参数中存在多个BatchParam注解!调用原生的方法{}", this.getFullMethodName(method));
+        LOGGER.error("多个List参数中存在大于1个BatchHackerParam注解!调用原生的方法{}", this.getFullMethodName(method));
         return pjp.proceed();
     }
 
-    private Object handleOneParamMethod(ProceedingJoinPoint pjp) throws Throwable {
-        return handleMuitParamMethod(pjp, 0);
-    }
+    private Object handleMapParamMethod(ProceedingJoinPoint pjp) throws Throwable {
 
-    private Object handleMuitParamMethod(ProceedingJoinPoint pjp, int i) throws Throwable {
         MethodSignature signature = (MethodSignature) pjp.getSignature();
         //获取被拦截的方法
         Method method = signature.getMethod();
         //获取被拦截的方法参数
         Object[] args = pjp.getArgs();
 
-        List coll = (List) args[i];
+        Map map = (Map) args[0];
+        if (map.size() == 0) {
+            LOGGER.error("Map参数长度为0!调用原生的方法{}", this.getFullMethodName(method));
+            return pjp.proceed();
+        }
+
+        int listCount = 0;
+        Object key = null;
+        for (Object k : map.keySet()) {
+            if (map.get(k) instanceof List) {
+                listCount++;
+                key = k;
+            }
+        }
+
+        if (listCount == 0) {
+            LOGGER.error("Map参数中不含有List类型的value!调用原生的方法{}", this.getFullMethodName(method));
+            return pjp.proceed();
+        }
+
+        if (listCount == 1) {
+            return foreach(pjp, key, null);
+        }
+
+        LOGGER.error("Map参数中含有大于1个的List类型的value!调用原生的方法{}", this.getFullMethodName(method));
+        return pjp.proceed();
+    }
+
+    private Object foreach(ProceedingJoinPoint pjp, Object key, Integer index) throws Throwable {
+
+        MethodSignature signature = (MethodSignature) pjp.getSignature();
+        //获取被拦截的方法
+        Method method = signature.getMethod();
+        if ((key == null && index == null) || (key != null && index != null)) {
+            LOGGER.error("foreach参数错误key:{},index:{}!调用原生的方法{}", key, index, this.getFullMethodName(method));
+            return pjp.proceed();
+        }
+        //获取被拦截的方法参数
+        Object[] args = pjp.getArgs();
+
+        List coll = null;
+        Map map = null;
+
+        if (key != null) {
+            map = (Map) args[0];
+            coll = (List) map.get(key);
+        } else if (index != null) {
+            coll = (List) args[index];
+        }
+
         if (coll == null || coll.size() == 0 || coll.size() < BATCH_SIZE) {
-            LOGGER.error("List参数长度不符:{}!调用原生的方法{}", coll == null ? 0 : coll.size(), this.getFullMethodName(method));
+            LOGGER.error("批处理数据List长度不符:{}!调用原生的方法{}", coll == null ? 0 : coll.size(), this.getFullMethodName(method));
             return pjp.proceed();
         }
 
@@ -128,23 +188,38 @@ public class BatchHackerInterceptor {
             batchSize = BATCH_SIZE;
         }
 
-        int index = 0;
+        int i = 0;
         int count = 0;
 
         do {
-            int start = index;
-            int end = index + batchSize < coll.size() ? index + batchSize : coll.size();
+            int start = i;
+            int end = i + batchSize < coll.size() ? i + batchSize : coll.size();
 
             List subColl = coll.subList(start, end);
 
-            args[i] = subColl;
+            if (key != null) {
+                map.put(key, subColl);
+                args[0] = map;
+            } else if (index != null) {
+                args[index] = subColl;
+            }
 
             count += (Integer) pjp.proceed(args);
 
-            index = index + batchSize;
-        } while (index < coll.size());
+            i = i + batchSize;
+        } while (i < coll.size());
 
         return count;
+    }
+
+
+    private Object handleOneParamMethod(ProceedingJoinPoint pjp) throws Throwable {
+        return handleMuitParamMethod(pjp, 0);
+    }
+
+    private Object handleMuitParamMethod(ProceedingJoinPoint pjp, int i) throws Throwable {
+        MethodSignature signature = (MethodSignature) pjp.getSignature();
+        return foreach(pjp, null, i);
     }
 
     private String getFullMethodName(Method method) {
