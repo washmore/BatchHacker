@@ -4,12 +4,13 @@
 
     <groupId>tech.washmore</groupId>
     <artifactId>util.batchhacker</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.2-SNAPSHOT</version>
     <packaging>jar</packaging>
     <description>
         在不侵入代码的前提下,突破mybatis批处理数据量2100个的限制!
-        ```1.0完成基本功能;
-        ```1.1新增對Map類型參數的支持;
+        ```1.0  完成基本功能;
+        ```1.1  新增對Map類型參數的支持;
+        ```1.2  deploy操作新增生成sources.jar
     </description>
     <name>BatchHacker</name>
     <url>http://maven.washmore.tech</url>
@@ -50,6 +51,23 @@
 
     <build>
         <finalName>BatchHacker</finalName>
+        <plugins>
+            <plugin>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.1</version>
+                <configuration>
+                    <attach>true</attach>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
 
 </project>

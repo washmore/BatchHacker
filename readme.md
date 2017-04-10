@@ -1,6 +1,46 @@
 ## BatchHacker.jar功能介绍
 mybatis框架在执行批量插入或者更新的时候限制入参List长度为2100以内,随着业务数据的增长,List长度总有超过这个数的时候,如果你嫌修改以前的业务代码麻烦的话,此时就有这个jar包的用武之地了,在不侵入代码的前提下,突破mybatis批处理数据量2100个的限制
 
+### Maven配置
+1.在Maven配置文件中profiles节点新增
+```
+        <profile>
+            <id>washmore</id>
+            <repositories>
+                <repository>
+                    <id>public</id>
+                    <url>http://maven.washmore.tech/nexus/content/repositories/public</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </repository>
+            </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>central</id>
+                    <url>http://maven.washmore.tech/nexus/content/repositories/public</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </pluginRepository>
+            </pluginRepositories>
+        </profile>
+```
+2.在项目中引入Maven依赖
+```
+    <dependency>
+      <groupId>tech.washmore</groupId>
+      <artifactId>util.batchhacker</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+```
+
 ### 使用方法
 1.首先将AOP增强拦截器托管给spring  
 使用xml声明式:  
