@@ -32,12 +32,12 @@ mybatis框架在执行批量插入或者更新的时候限制入参List长度为
             </pluginRepositories>
         </profile>
 ```
-2.在项目中引入Maven依赖
+2.在项目中引入最新版本的Maven依赖
 ```
     <dependency>
       <groupId>tech.washmore</groupId>
       <artifactId>util.batchhacker</artifactId>
-      <version>1.1-SNAPSHOT</version>
+      <version>1.2-SNAPSHOT</version>
     </dependency>
 ```
 
