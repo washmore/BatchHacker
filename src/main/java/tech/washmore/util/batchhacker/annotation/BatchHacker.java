@@ -14,5 +14,17 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface BatchHacker {
+    /**
+     * 触发自动分批操作的阀值;默认取2000(稍小于mybatis的限制)
+     *
+     * @return
+     */
+    int batchLimit() default 2000;
+
+    /**
+     * 自动分批操作每批次的数量;默认取500
+     *
+     * @return
+     */
     int batchSize() default 500;
 }

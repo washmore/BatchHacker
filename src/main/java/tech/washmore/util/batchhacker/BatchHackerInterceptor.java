@@ -24,14 +24,23 @@ import java.util.Map;
  */
 @Aspect
 public class BatchHackerInterceptor {
-    private static final int BATCH_SIZE = 500;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BatchHackerInterceptor.class);
 
+    /**
+     * 切面配置
+     */
     @Pointcut("@annotation(tech.washmore.util.batchhacker.annotation.BatchHacker)")
     public void pointCut() {
     }
 
+    /**
+     * 切面环绕增强
+     *
+     * @param pjp
+     * @return
+     * @throws Throwable
+     */
     @Around("pointCut()")
     public Object interceptor(ProceedingJoinPoint pjp) throws Throwable {
 
@@ -136,20 +145,27 @@ public class BatchHackerInterceptor {
             coll = (List) args[index];
         }
 
-        if (coll == null || coll.size() == 0 || coll.size() < BATCH_SIZE) {
+        BatchHacker ann = method.getAnnotation(BatchHacker.class);
+        int batchSize = ann.batchSize();
+        int batchLimit = ann.batchLimit();
+
+        if (batchLimit <= 0) {
+            LOGGER.error("BatchHacker注解的batchLimit值不在有效范围,应该为大于0的整数!调用原生的方法{}", this.getFullMethodName(method));
+            return pjp.proceed();
+        }
+
+        if (coll == null || coll.size() == 0 || coll.size() < batchLimit) {
             LOGGER.error("批处理数据List长度不符:{}!调用原生的方法{}", coll == null ? 0 : coll.size(), this.getFullMethodName(method));
             return pjp.proceed();
         }
 
-        BatchHacker ann = method.getAnnotation(BatchHacker.class);
-        int batchSize = ann.batchSize();
 
         if (batchSize <= 0) {
-            LOGGER.error("BatchHacker注解的batchSize值不在有效范围,应该为({},{}]的整数!调用原生的方法{}", 0, BATCH_SIZE, this.getFullMethodName(method));
+            LOGGER.error("BatchHacker注解的batchSize值不在有效范围,应该为({},{}]的整数!调用原生的方法{}", 0, batchLimit, this.getFullMethodName(method));
             return pjp.proceed();
         }
-        if (batchSize > BATCH_SIZE) {
-            batchSize = BATCH_SIZE;
+        if (batchSize > batchLimit) {
+            batchSize = batchLimit;
         }
 
         int i = 0;
