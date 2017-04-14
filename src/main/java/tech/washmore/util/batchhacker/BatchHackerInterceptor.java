@@ -150,7 +150,7 @@ public class BatchHackerInterceptor {
         int batchLimit = ann.batchLimit();
 
         if (batchLimit <= 0) {
-            LOGGER.error("BatchHacker注解的batchLimit值不在有效范围,应该为大于0的整数!调用原生的方法{}", this.getFullMethodName(method));
+            LOGGER.error("BatchHacker注解的batchLimit值{}不在有效范围,应该为大于0的整数!调用原生的方法{}", batchLimit, this.getFullMethodName(method));
             return pjp.proceed();
         }
 
@@ -161,7 +161,7 @@ public class BatchHackerInterceptor {
 
 
         if (batchSize <= 0) {
-            LOGGER.error("BatchHacker注解的batchSize值不在有效范围,应该为({},{}]的整数!调用原生的方法{}", 0, batchLimit, this.getFullMethodName(method));
+            LOGGER.error("BatchHacker注解的batchSize值{}不在有效范围,应该为({},{}]的整数!调用原生的方法{}", batchSize, 0, batchLimit, this.getFullMethodName(method));
             return pjp.proceed();
         }
         if (batchSize > batchLimit) {
