@@ -37,7 +37,7 @@ mybatis框架在执行批量插入或者更新的时候限制入参List长度为
     <dependency>
       <groupId>tech.washmore</groupId>
       <artifactId>util.batchhacker</artifactId>
-      <version>1.3-SNAPSHOT</version>
+      <version>1.4-SNAPSHOT</version>
     </dependency>
 ```
 
