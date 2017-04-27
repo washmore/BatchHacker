@@ -62,7 +62,7 @@ public class BatchHackerInterceptor {
         }
         if (args.length == 1) {
             if (args[0] == null) {
-                LOGGER.info("唯一的参数为null!调用原生的方法{}", this.getFullMethodName(method));
+                LOGGER.error("唯一的参数为null!调用原生的方法{}", this.getFullMethodName(method));
                 return pjp.proceed();
             }
             if (args[0] instanceof List) {
@@ -71,7 +71,7 @@ public class BatchHackerInterceptor {
             if (args[0] instanceof Map) {
                 return handleMapParamMethod(pjp);
             }
-            LOGGER.info("唯一的参数不为List或Map!调用原生的方法{}", this.getFullMethodName(method));
+            LOGGER.error("唯一的参数不为List或Map!调用原生的方法{}", this.getFullMethodName(method));
             return pjp.proceed();
         }
 

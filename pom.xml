@@ -4,7 +4,7 @@
 
     <groupId>tech.washmore</groupId>
     <artifactId>util.batchhacker</artifactId>
-    <version>1.4-SNAPSHOT</version>
+    <version>1.4.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <description>
         在不侵入代码的前提下,突破mybatis批处理数据量2100个的限制!
