@@ -48,7 +48,7 @@ mybatis框架在执行批量插入或者更新的时候限制入参List长度为
 ```
     <import resource="classpath*:batchhacker/spring-aop.xml"/>
 ```
-或者使用注解式:  
+或者使用注解式(如果是springboot项目的话,可以直接在starter上面添加ImportResource注解):  
 新建类BatchHackerConfig类(确保此类能被自动扫描到):  
 ```
 @Configuration
